@@ -3,10 +3,9 @@
 This section describes the steps needed to get this project up and running
 
 ## Prerequisites
-TODO
-
-Node.js
-NPM
+The following needs to be ionstalled on your system:
+- Node.js
+- NPM
 
 ## Steps
 ### Initialize the project
@@ -32,10 +31,10 @@ This section describes the different endpoints available:
 - POST /block
 
 ## GET /block
-TODO
+Will respond with the largest block height available.
 
 ## GET /block/{blockHeight}
-TODO
+Will respond with a block object for the requested block height.
 
 ## POST /block
-TODO
+Accepts a new block to be added to the chain. Will respond with a complete block connected to the chain.
