@@ -1,3 +1,6 @@
+# Choice of Node.js framework
+The choice for Node.js framework ended up on Express.js. Simply because it is a very mature framework with lots of documentations and examples. It also seems like the framework, of the three options, that was the least opinionated. Which makes it possible to make a clean and simple implementation.
+
 # Installation
 
 This section describes the steps needed to get this project up and running
