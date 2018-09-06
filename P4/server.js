@@ -10,6 +10,11 @@ app.use(express.json());
 var SC = require('./simpleChain');
 let chain = new SC.Blockchain();
 
+// Bitcoin libraries
+const bitcoin = require('bitcoinjs-lib');
+const bitcoinMessage = require('bitcoinjs-message');
+
+
 let get_root = async function(req, res) {
     res.json({links:[{rel: 'latest', method: 'GET', href: 'http://localhost:8000/block'}]});
 };
