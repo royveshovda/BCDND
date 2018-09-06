@@ -24,12 +24,15 @@ let get_block_height = async function(req, res) {
     try{
         console.log(req.originalUrl);
         let height = await chain.getBlockHeight();
-        res.json({block_height: height, links:[{rel: 'latest', method: 'GET', href: 'http://localhost:8000/block/'+height}, {rel: 'create', method: 'POST', href: 'http://localhost:8000/block'}]});
+        res.json({block_height: height, links:[
+            {rel: 'latest', method: 'GET', href: 'http://localhost:8000/block/'+height},
+            {rel: 'create', method: 'POST', href: 'http://localhost:8000/block'}
+        ]});
     } catch (error) {
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
-    
 };
+
 
 let get_a_block = async function(req, res) {
     try{
@@ -40,7 +43,8 @@ let get_a_block = async function(req, res) {
         console.log(error);
         res.status(404).send({message: 'blockheight ' + req.params.blockHeight + ' not found'});
     }
-};
+}
+
 
 let post_a_new_block = async function(req, res) {
     try{
@@ -50,7 +54,8 @@ let post_a_new_block = async function(req, res) {
     } catch (error) {
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
-};
+}
+
 
 // Routes
 app.route('/')
@@ -64,7 +69,7 @@ app.route('/block/:blockHeight')
     .get(get_a_block);
 
 app.use(function(req, res) {
-    res.status(404).send({url: req.originalUrl + ' not found'})
+    res.status(404).send({url: req.originalUrl + ' not found'});
   });
 
 app.listen(port);
