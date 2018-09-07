@@ -55,7 +55,7 @@ let post_a_new_block = async function(req, res) {
 
 
 // Start identity check process
-let initiate_identity_validation = async function(req, res) {
+let initiate_validation = async function(req, res) {
     try{
         if(req.hasOwnProperty('body') && req.body.hasOwnProperty('address')){
             let address = req.body.address;
@@ -137,17 +137,6 @@ let validate_identity_signature = async function(req, res) {
 }
 
 
-//Check if address has valid request session
-let validate_identity_request = async function(req, res) {
-    try{
-        //TODO
-        res.json({message: 'Not implemented (3)'});
-    } catch (error) {
-        res.status(500).send({message: 'We are sorry to report that something went very wrong'});
-    }
-}
-
-
 // Routes
 app.route('/')
     .get(get_root);
@@ -159,14 +148,11 @@ app.route('/block')
 app.route('/block/:blockHeight')
     .get(get_a_block);
 
-app.route('/message-signature')
-    .post(initiate_identity_validation);
-
 app.route('/message-signature/validate')
     .post(validate_identity_signature);
 
 app.route('/requestValidation')
-    .post(validate_identity_request);
+    .post(initiate_validation);
 
 app.use(function(req, res) {
     res.status(404).send({url: req.originalUrl + ' not found'});
