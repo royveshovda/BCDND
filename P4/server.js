@@ -9,6 +9,8 @@ app.use(express.json());
 // Blockchain handlers
 var SC = require('./simpleChain');
 let chain = new SC.Blockchain();
+let notary = new SC.NotaryService();
+
 
 // Bitcoin libraries
 const bitcoin = require('bitcoinjs-lib');
@@ -60,8 +62,38 @@ let post_a_new_block = async function(req, res) {
 // Start identity check process
 let initiate_identity_validation = async function(req, res) {
     try{
-        //TODO
-        res.json({message: 'Not implemented (1)'});
+        //console.log(req.body)
+        if(req.hasOwnProperty('body') && req.body.hasOwnProperty('wallet_id')){
+            let walletId = req.body.wallet_id;
+            let now = Math.floor(new Date/1000);
+            let existing = await notary.hasExistingValidRequest(walletId, now);
+            console.log('Max:')
+            console.log(SC.MAXVALIDATIONWINDOW)
+            if(existing){
+                console.log('Found existing');
+                var status = await notary.getRequest(walletId);
+                //Update validationWindow
+                let originalTs = status.status.requestTimeStamp
+                status.status.validationWindow = (originalTs + SC.MAXVALIDATIONWINDOW) - now;
+            }else{
+                let message = walletId + ':' + now.toString() + ':starRegistry';
+                status = {registerStar: true, status: {
+                    address: walletId,
+                    requestTimeStamp: now,
+                    message: message,
+                    validationWindow: SC.MAXVALIDATIONWINDOW,
+                    messageSignature: "unsigned"
+                    }};
+                await notary.saveRequestStatus(walletId, status);
+            }
+
+            status.links = [
+                {rel: 'sign', method: 'POST', href: 'http://localhost:8000/message-signature/validate'}
+            ]
+            res.json(status);
+        }else{
+            res.status(401).send({message: "Request must contain 'wallet_id'"});
+        }
     } catch (error) {
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
@@ -101,7 +133,7 @@ app.route('/block')
 app.route('/block/:blockHeight')
     .get(get_a_block);
 
-app.route('/message-signature/:walletId')
+app.route('/message-signature')
     .post(initiate_identity_validation);
 
 app.route('/message-signature/validate')

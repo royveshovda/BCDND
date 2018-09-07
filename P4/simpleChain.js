@@ -7,20 +7,29 @@ const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
 const LASTKEY = 'LAST';
+const MAXVALIDATIONWINDOW = 300;
 
-async function dbInitiated(){
+
+
+async function hasKeyInDB(key){
   try{
-		var result = await db.get(LASTKEY);
+		var result = await db.get(key);
 		return true;
 	}catch(err){
-    console.log(err);
 		return false;
 	}
 }
 
-async function addLevelDBData(key,value){
-  return db.put(key, value);
+
+async function dbInitiated(){
+  return await hasKeyInDB(LASTKEY);
 }
+
+
+async function addLevelDBData(key,value){
+  return await db.put(key, value);
+}
+
 
 /* ===== Block Class ==============================
 |  Class with a constructor for block 			   |
@@ -34,6 +43,51 @@ class Block{
      this.previousBlockHash = ""
   }
 }
+
+class NotaryStatus{
+  constructor(address, message){
+    this.address = address,
+    this.message = message
+  }
+}
+
+
+class NotaryService{
+  constructor(){
+  }
+
+  async hasExistingValidRequest(address, now){
+    let existing = await hasKeyInDB(address);
+    if(!existing){
+      return false;
+    }
+    try{
+      let statusRaw = await db.get(address);
+      let status = JSON.parse(statusRaw);
+      let originalTs = status.status.requestTimeStamp;
+      let timeLeft = (originalTs + MAXVALIDATIONWINDOW) - now;
+      return timeLeft >= 0;
+    }catch(err){
+      console.log(err)
+    }
+    return false;
+  }
+
+  async getRequest(address){
+    console.log(address);
+    let res = await db.get(address);
+    console.log(res);
+    let r = JSON.parse(res);
+    console.log(r);
+    return r;
+    //return db.get(address.toString()).then(res => {r = JSON.parse(res); console.log(r);return (r)});
+  }
+
+  async saveRequestStatus(address, status){
+    await addLevelDBData(address, JSON.stringify(status));
+  }
+}
+
 
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
@@ -155,5 +209,7 @@ class Blockchain{
 
 module.exports = {
   Block: Block,
-  Blockchain: Blockchain
+  Blockchain: Blockchain,
+  NotaryService: NotaryService,
+  MAXVALIDATIONWINDOW, MAXVALIDATIONWINDOW
 }
