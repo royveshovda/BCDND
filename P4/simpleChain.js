@@ -8,12 +8,10 @@ const chainDB = './chaindata';
 const db = level(chainDB);
 const LASTKEY = 'LAST';
 const MAXVALIDATIONWINDOW = 300;
-const SIGNED = 'signed';
 
 // Bitcoin libraries
 const bitcoin = require('bitcoinjs-lib');
 const bitcoinMessage = require('bitcoinjs-message');
-
 
 async function hasKeyInDB(key){
   try{
@@ -24,16 +22,13 @@ async function hasKeyInDB(key){
 	}
 }
 
-
 async function dbInitiated(){
   return await hasKeyInDB(LASTKEY);
 }
 
-
 async function addLevelDBData(key,value){
   return await db.put(key, value);
 }
-
 
 /* ===== Block Class ==============================
 |  Class with a constructor for block 			   |
@@ -47,7 +42,6 @@ class Block{
      this.previousBlockHash = ""
   }
 }
-
 
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
@@ -221,6 +215,5 @@ module.exports = {
   Block: Block,
   Blockchain: Blockchain,
   NotaryService: NotaryService,
-  MAXVALIDATIONWINDOW: MAXVALIDATIONWINDOW,
-  SIGNED: SIGNED
+  MAXVALIDATIONWINDOW: MAXVALIDATIONWINDOW
 }

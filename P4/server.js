@@ -16,6 +16,30 @@ let get_root = async function(req, res) {
     res.json({links:[{rel: 'latest', method: 'GET', href: 'http://localhost:8000/block'}]});
 };
 
+let isASCII = function(str) {
+    return (/^[\x00-\xFF]*$/).test(str);
+}
+
+let wordCount = function(str) { 
+    return str.split(" ").length;
+}
+
+let a2hex = function (str) {
+    var arr = [];
+    for (var i = 0, l = str.length; i < l; i ++) {
+      var hex = Number(str.charCodeAt(i)).toString(16);
+      arr.push(hex);
+    }
+    return arr.join('');
+  }
+  
+  let hex2a = function (hexx) {
+      var hex = hexx.toString();//force conversion
+      var str = '';
+      for (var i = 0; i < hex.length; i += 2)
+          str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      return str;
+  }
 
 let get_block_height = async function(req, res) {
     try{
@@ -26,6 +50,7 @@ let get_block_height = async function(req, res) {
             {rel: 'create', method: 'POST', href: 'http://localhost:8000/block'}
         ]});
     } catch (error) {
+        console.log(error);
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
 };
@@ -45,10 +70,64 @@ let get_a_block = async function(req, res) {
 
 let post_a_new_block = async function(req, res) {
     try{
-        let block = new SC.Block(req.body.body);
+        //Validate request
+        let rootKeys = ['address', 'star'];
+        for (const key of Object.keys(req.body)) {
+            if(!rootKeys.includes(key)){
+                return res.status(400).send({message: "Request must only contain 'address' and 'star'"});
+            }
+        }
+        if(!req.hasOwnProperty('body')){
+            return res.status(400).send({message: "Try setting Content-type"});
+        }
+        if(!req.body.hasOwnProperty('address')){
+            return res.status(400).send({message: "Request must contain 'address'"});
+        }
+        if(!req.body.hasOwnProperty('star')){
+            return res.status(400).send({message: "Request must contain 'star'"});
+        }
+        let starKeys = ['ra', 'dec', 'cen', 'mag', 'story'];
+        for (const key of Object.keys(req.body.star)) {
+            if(!starKeys.includes(key)){
+                return res.status(400).send({message: "'star' must only contain 'ra', 'dec', 'cen', 'mag' and 'story'"});
+            }
+        }
+        if(!req.body.star.hasOwnProperty('ra')){
+            return res.status(400).send({message: "Request must contain 'star.ra' (right_ascension)"});
+        }
+        if(!req.body.star.hasOwnProperty('dec')){
+            return res.status(400).send({message: "Request must contain 'star.dec' (declination)"});
+        }
+        if(!req.body.star.hasOwnProperty('story')){
+            return res.status(400).send({message: "Request must contain 'star.story'"});
+        }
+        if(!isASCII(req.body.star.story)){
+            return res.status(400).send({message: "'star.story' can only be ascii"});
+        }
+        if(wordCount(req.body.star.story) > 250){
+            return res.status(400).send({message: "'star.story' can be maximum 250 words long"});
+        }
+
+        //Encode story as hex
+        let hex = a2hex(req.body.star.story);
+        let body = req.body;
+        body.star.story = hex;
+        
+        //Verify valid identity check has been performed
+        let now = Math.floor(new Date/1000);
+        let validIdentity = await notary.hasExistingValidRequest(req.body.address, now);
+        if(!validIdentity){
+            return res.status(406).send({message: "Identity of address not verified"});
+        }
+
+        //Save to blockchain
+        let block = new SC.Block(body);
         let completeBlock = await chain.addBlock(block);
+        //Not saved, only returned
+        completeBlock.body.star.storyDecoded = hex2a(completeBlock.body.star.story);
         res.json(completeBlock);
     } catch (error) {
+        console.log(error);
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
 }
@@ -69,7 +148,7 @@ let initiate_validation = async function(req, res) {
                 status.status.validationWindow = (originalTs + SC.MAXVALIDATIONWINDOW) - now;
             }else{
                 let message = address + ':' + now.toString() + ':starRegistry';
-                status = {registerStar: true, status: {
+                status = {registerStar: false, status: {
                     address: address,
                     requestTimeStamp: now,
                     message: message,
@@ -84,9 +163,10 @@ let initiate_validation = async function(req, res) {
             ]
             res.json(status);
         }else{
-            res.status(40).send({message: "Request must contain 'address'"});
+            res.status(400).send({message: "Request must contain 'address'"});
         }
     } catch (error) {
+        console.log(error);
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
 }
@@ -115,13 +195,15 @@ let validate_identity_signature = async function(req, res) {
                 let valid = notary.validateSignature(status.status.message, address, signature);
                 var msg = ''
                 if(valid == true){
-                    status.status.messageSignature = 'valid'
+                    status.status.messageSignature = 'valid';
+                    status.registerStar = true;
                     await notary.saveRequestStatus(address, status);
-                    //status.links = [
-                    //    {rel: 'sign', method: 'POST', href: 'http://localhost:8000/message-signature/validate'}
-                    //]
+                    status.links = [
+                        {rel: 'register', method: 'POST', href: 'http://localhost:8000/block'}
+                    ]
                     res.json(status);
                 }else{
+                    status.registerStar = false;
                     status.status.messageSignature = 'not valid'
                     res.status(406).send(status);
                 }
@@ -132,6 +214,7 @@ let validate_identity_signature = async function(req, res) {
             res.status(400).send({message: "Request must contain 'address' and 'signature'"});
         }
     } catch (error) {
+        console.log(error);
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
 }
