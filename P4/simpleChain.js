@@ -8,7 +8,11 @@ const chainDB = './chaindata';
 const db = level(chainDB);
 const LASTKEY = 'LAST';
 const MAXVALIDATIONWINDOW = 300;
+const SIGNED = 'signed';
 
+// Bitcoin libraries
+const bitcoin = require('bitcoinjs-lib');
+const bitcoinMessage = require('bitcoinjs-message');
 
 
 async function hasKeyInDB(key){
@@ -41,50 +45,6 @@ class Block{
      this.body = data,
      this.time = 0,
      this.previousBlockHash = ""
-  }
-}
-
-class NotaryStatus{
-  constructor(address, message){
-    this.address = address,
-    this.message = message
-  }
-}
-
-
-class NotaryService{
-  constructor(){
-  }
-
-  async hasExistingValidRequest(address, now){
-    let existing = await hasKeyInDB(address);
-    if(!existing){
-      return false;
-    }
-    try{
-      let statusRaw = await db.get(address);
-      let status = JSON.parse(statusRaw);
-      let originalTs = status.status.requestTimeStamp;
-      let timeLeft = (originalTs + MAXVALIDATIONWINDOW) - now;
-      return timeLeft >= 0;
-    }catch(err){
-      console.log(err)
-    }
-    return false;
-  }
-
-  async getRequest(address){
-    console.log(address);
-    let res = await db.get(address);
-    console.log(res);
-    let r = JSON.parse(res);
-    console.log(r);
-    return r;
-    //return db.get(address.toString()).then(res => {r = JSON.parse(res); console.log(r);return (r)});
-  }
-
-  async saveRequestStatus(address, status){
-    await addLevelDBData(address, JSON.stringify(status));
   }
 }
 
@@ -207,9 +167,60 @@ class Blockchain{
   }
 };
 
+
+class NotaryStatus{
+  constructor(address, message){
+    this.address = address,
+    this.message = message
+  }
+};
+
+
+class NotaryService{
+  constructor(){
+  }
+
+  async hasExistingValidRequest(address, now){
+    let existing = await hasKeyInDB(address);
+    if(!existing){
+      return false;
+    }
+    try{
+      let statusRaw = await db.get(address);
+      let status = JSON.parse(statusRaw);
+      let originalTs = status.status.requestTimeStamp;
+      let timeLeft = (originalTs + MAXVALIDATIONWINDOW) - now;
+      return timeLeft >= 0;
+    }catch(err){
+      console.log(err)
+    }
+    return false;
+  }
+
+  async getRequest(address){
+    let res = await db.get(address);
+    return JSON.parse(res);
+  }
+
+  async saveRequestStatus(address, status){
+    await addLevelDBData(address, JSON.stringify(status));
+  }
+
+  validateSignature(message, address, signature){
+    try{
+      return bitcoinMessage.verify(message, address, signature);
+    }catch(err){
+      console.log(err)
+      return false
+    }
+  }
+};
+
+
 module.exports = {
   Block: Block,
   Blockchain: Blockchain,
   NotaryService: NotaryService,
-  MAXVALIDATIONWINDOW, MAXVALIDATIONWINDOW
+  MAXVALIDATIONWINDOW: MAXVALIDATIONWINDOW,
+  SIGNED: SIGNED
 }

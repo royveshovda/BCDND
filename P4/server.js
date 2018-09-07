@@ -12,11 +12,6 @@ let chain = new SC.Blockchain();
 let notary = new SC.NotaryService();
 
 
-// Bitcoin libraries
-const bitcoin = require('bitcoinjs-lib');
-const bitcoinMessage = require('bitcoinjs-message');
-
-
 let get_root = async function(req, res) {
     res.json({links:[{rel: 'latest', method: 'GET', href: 'http://localhost:8000/block'}]});
 };
@@ -62,29 +57,26 @@ let post_a_new_block = async function(req, res) {
 // Start identity check process
 let initiate_identity_validation = async function(req, res) {
     try{
-        //console.log(req.body)
-        if(req.hasOwnProperty('body') && req.body.hasOwnProperty('wallet_id')){
-            let walletId = req.body.wallet_id;
+        if(req.hasOwnProperty('body') && req.body.hasOwnProperty('address')){
+            let address = req.body.address;
             let now = Math.floor(new Date/1000);
-            let existing = await notary.hasExistingValidRequest(walletId, now);
-            console.log('Max:')
-            console.log(SC.MAXVALIDATIONWINDOW)
+            let existing = await notary.hasExistingValidRequest(address, now);
             if(existing){
                 console.log('Found existing');
-                var status = await notary.getRequest(walletId);
+                var status = await notary.getRequest(address);
                 //Update validationWindow
                 let originalTs = status.status.requestTimeStamp
                 status.status.validationWindow = (originalTs + SC.MAXVALIDATIONWINDOW) - now;
             }else{
-                let message = walletId + ':' + now.toString() + ':starRegistry';
+                let message = address + ':' + now.toString() + ':starRegistry';
                 status = {registerStar: true, status: {
-                    address: walletId,
+                    address: address,
                     requestTimeStamp: now,
                     message: message,
                     validationWindow: SC.MAXVALIDATIONWINDOW,
                     messageSignature: "unsigned"
                     }};
-                await notary.saveRequestStatus(walletId, status);
+                await notary.saveRequestStatus(address, status);
             }
 
             status.links = [
@@ -92,7 +84,7 @@ let initiate_identity_validation = async function(req, res) {
             ]
             res.json(status);
         }else{
-            res.status(401).send({message: "Request must contain 'wallet_id'"});
+            res.status(40).send({message: "Request must contain 'address'"});
         }
     } catch (error) {
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
@@ -103,15 +95,49 @@ let initiate_identity_validation = async function(req, res) {
 // Validate id signature for identity is valid
 let validate_identity_signature = async function(req, res) {
     try{
-        //TODO
-        res.json({message: 'Not implemented (2)'});
+        if(req.hasOwnProperty('body') &&
+            req.body.hasOwnProperty('address') &&
+            req.body.hasOwnProperty('signature')){
+            let address = req.body.address;
+            let signature = req.body.signature;
+            console.log(address)
+            console.log(signature)
+            let now = Math.floor(new Date/1000);
+            let existing = await notary.hasExistingValidRequest(address, now);
+            if(existing){
+                console.log('Has valid request')
+                var status = await notary.getRequest(address);
+                //Update validationWindow
+                let originalTs = status.status.requestTimeStamp
+                status.status.validationWindow = (originalTs + SC.MAXVALIDATIONWINDOW) - now;
+                
+                //TODO: Validate signature
+                let valid = notary.validateSignature(status.status.message, address, signature);
+                var msg = ''
+                if(valid == true){
+                    status.status.messageSignature = 'valid'
+                    await notary.saveRequestStatus(address, status);
+                    //status.links = [
+                    //    {rel: 'sign', method: 'POST', href: 'http://localhost:8000/message-signature/validate'}
+                    //]
+                    res.json(status);
+                }else{
+                    status.status.messageSignature = 'not valid'
+                    res.status(406).send(status);
+                }
+            }else{
+                res.status(412).send({message: "A valid identity check process has not been initiated"});
+            }
+        }else{
+            res.status(400).send({message: "Request must contain 'address' and 'signature'"});
+        }
     } catch (error) {
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
 }
 
 
-//Check if walletID has valid request session
+//Check if address has valid request session
 let validate_identity_request = async function(req, res) {
     try{
         //TODO
