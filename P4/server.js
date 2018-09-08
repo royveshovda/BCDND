@@ -59,8 +59,8 @@ let get_block_height = async function(req, res) {
 let get_a_block_by_height = async function(req, res) {
     try{
         var block = await chain.getBlock(req.params.blockHeight);
-        console.log(block);
-        res.json(block);
+        let decoded = decode_story(block);
+        res.json(decoded);
     } catch (error) {
         console.log(error);
         res.status(404).send({message: 'blockheight ' + req.params.blockHeight + ' not found'});
