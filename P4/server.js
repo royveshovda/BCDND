@@ -64,7 +64,7 @@ let decode_story = function(block){
     if(block.hasOwnProperty('body')){
         if(block.body.hasOwnProperty('star')){
             if(block.body.star.hasOwnProperty('story')){
-                block.body.star.storyDecoded = Buffer(block.body.star.story, 'hex').toString();
+                block.body.star.storyDecoded = Buffer.from(block.body.star.story, 'hex').toString();
             }
         }
     }
@@ -188,7 +188,7 @@ let post_a_new_block = async function(req, res) {
         }
 
         //Encode story as hex
-        req.body.star.story = Buffer(req.body.star.story).toString('hex');
+        req.body.star.story = Buffer.from(req.body.star.story).toString('hex');
         
         //Verify valid identity check has been performed
         let now = Math.floor(new Date/1000);
