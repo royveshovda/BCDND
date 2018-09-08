@@ -201,6 +201,9 @@ let post_a_new_block = async function(req, res) {
         let block = new SC.Block(req.body);
         let completeBlock = await chain.addBlock(block);
         
+        //terminate identity session (only one star per session)
+        await notary.completeRequest(req.body.address);
+        
         //Not saved, only returned (reviewer claimed this was wrong to include. not a written requirement anywhere, but I have removed to be "compliant")
         //completeBlock = decode_story(completeBlock);
         

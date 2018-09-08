@@ -30,6 +30,10 @@ async function addLevelDBData(key,value){
   return await db.put(key, value);
 }
 
+async function removeDBData(key){
+  return await db.del(key);
+}
+
 /* ===== Block Class ==============================
 |  Class with a constructor for block 			   |
 |  ===============================================*/
@@ -207,6 +211,10 @@ class NotaryService{
       console.log(err)
       return false
     }
+  }
+
+  async completeRequest(address){
+    await removeDBData(address);
   }
 };
 
