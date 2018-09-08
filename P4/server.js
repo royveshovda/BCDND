@@ -14,7 +14,7 @@ let notary = new SC.NotaryService();
 
 let get_root = async function(req, res) {
     res.json({links:[{rel: 'latest', method: 'GET', href: 'http://localhost:8000/block'}]});
-};
+}
 
 let isASCII = function(str) {
     return (/^[\x00-\xFF]*$/).test(str);
@@ -23,23 +23,6 @@ let isASCII = function(str) {
 let wordCount = function(str) { 
     return str.split(" ").length;
 }
-
-let a2hex = function (str) {
-    var arr = [];
-    for (var i = 0, l = str.length; i < l; i ++) {
-      var hex = Number(str.charCodeAt(i)).toString(16);
-      arr.push(hex);
-    }
-    return arr.join('');
-  }
-  
-  let hex2a = function (hexx) {
-      var hex = hexx.toString();//force conversion
-      var str = '';
-      for (var i = 0; i < hex.length; i += 2)
-          str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-      return str;
-  }
 
 let get_block_height = async function(req, res) {
     try{
@@ -53,7 +36,7 @@ let get_block_height = async function(req, res) {
         console.log(error);
         res.status(500).send({message: 'We are sorry to report that something went very wrong'});
     }
-};
+}
 
 
 let get_a_block_by_height = async function(req, res) {
@@ -81,7 +64,7 @@ let decode_story = function(block){
     if(block.hasOwnProperty('body')){
         if(block.body.hasOwnProperty('star')){
             if(block.body.star.hasOwnProperty('story')){
-                block.body.star.storyDecoded = hex2a(block.body.star.story);
+                block.body.star.storyDecoded = Buffer(block.body.star.story, 'hex').toString();
             }
         }
     }
@@ -205,9 +188,7 @@ let post_a_new_block = async function(req, res) {
         }
 
         //Encode story as hex
-        let hex = a2hex(req.body.star.story);
-        let body = req.body;
-        body.star.story = hex;
+        body.star.story = Buffer(req.body.star.story).toString('hex');
         
         //Verify valid identity check has been performed
         let now = Math.floor(new Date/1000);
@@ -217,11 +198,11 @@ let post_a_new_block = async function(req, res) {
         }
 
         //Save to blockchain
-        let block = new SC.Block(body);
+        let block = new SC.Block(req.body);
         let completeBlock = await chain.addBlock(block);
         
-        //Not saved, only returned
-        completeBlock = decode_story(completeBlock);
+        //Not saved, only returned (reviewer claimed this was wrong to include. not a written requirement anywhere, but I have removed to be "compliant")
+        //completeBlock = decode_story(completeBlock);
         
         res.json(completeBlock);
     } catch (error) {
