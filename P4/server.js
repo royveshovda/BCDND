@@ -188,7 +188,7 @@ let post_a_new_block = async function(req, res) {
         }
 
         //Encode story as hex
-        body.star.story = Buffer(req.body.star.story).toString('hex');
+        req.body.star.story = Buffer(req.body.star.story).toString('hex');
         
         //Verify valid identity check has been performed
         let now = Math.floor(new Date/1000);
