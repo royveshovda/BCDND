@@ -133,6 +133,37 @@ let get_blocks_by_address = async function(req, res){
     }
 }
 
+let filter_blocks_by_hash = function(blocks, hash){
+    let len = blocks.length;
+    for (var i = 0; i < len; i++) {
+        let block = blocks[i];
+        if(block.hash == hash){
+            //return early, should be only one
+            return block;
+        }
+    }
+    return {};
+}
+
+let get_block_by_hash = async function(req, res){
+    try{
+        let blocks = await get_all_blocks();
+
+        let hash = req.params.hash;
+
+        //TODO: Filter blocks
+        let filtered = filter_blocks_by_hash(blocks, hash);
+        
+        //Append encoded stories
+        let decoded_blocks = decode_story(filtered);
+        
+        return res.json(decoded_blocks);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message: 'We are sorry to report that something went very wrong'});
+    }
+}
+
 let post_a_new_block = async function(req, res) {
     try{
         //Validate request
@@ -298,8 +329,11 @@ app.route('/block')
 app.route('/block/:blockHeight')
     .get(get_a_block_by_height);
 
-app.route('/stars/address/:address')
+app.route('/stars/address::address')
     .get(get_blocks_by_address);
+
+app.route('/stars/hash::hash')
+    .get(get_block_by_hash);
 
 app.route('/message-signature/validate')
     .post(validate_identity_signature);
