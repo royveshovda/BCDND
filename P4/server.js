@@ -56,7 +56,7 @@ let get_block_height = async function(req, res) {
 };
 
 
-let get_a_block = async function(req, res) {
+let get_a_block_by_height = async function(req, res) {
     try{
         var block = await chain.getBlock(req.params.blockHeight);
         console.log(block);
@@ -67,6 +67,71 @@ let get_a_block = async function(req, res) {
     }
 }
 
+let get_all_blocks = async function(){
+    let height = await chain.getBlockHeight();
+    var blocks = [];
+    for (var i = 1; i <= height; i++) { 
+        let b = await chain.getBlock(i);
+        blocks.push(b)
+    }
+    return blocks;
+}
+
+let decode_story = function(block){
+    if(block.hasOwnProperty('body')){
+        if(block.body.hasOwnProperty('star')){
+            if(block.body.star.hasOwnProperty('story')){
+                block.body.star.storyDecoded = hex2a(block.body.star.story);
+            }
+        }
+    }
+    return block;
+}
+
+let decode_stories = function(blocks){
+    let len = blocks.length;
+    for (var i = 0; i < len; i++) {
+        decode_story(blocks[i]);
+    }
+    return blocks;
+}
+
+let filter_blocks_by_address = function(blocks, address){
+    let len = blocks.length;
+    var filtered = [];
+    for (var i = 0; i < len; i++) {
+        let block = blocks[i];
+        if(block.hasOwnProperty('body')){
+            if(block.body.hasOwnProperty('address')){
+                if(block.body.address == address){
+                    filtered.push(block);
+                }
+            }
+        }
+    }
+    return filtered;
+}
+
+
+
+let get_blocks_by_address = async function(req, res){
+    try{
+        let blocks = await get_all_blocks();
+
+        let address = req.params.address;
+
+        //TODO: Filter blocks
+        let filtered = filter_blocks_by_address(blocks, address);
+        
+        //Append encoded stories
+        let decoded_blocks = decode_stories(filtered);
+        
+        return res.json(decoded_blocks);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message: 'We are sorry to report that something went very wrong'});
+    }
+}
 
 let post_a_new_block = async function(req, res) {
     try{
@@ -123,8 +188,10 @@ let post_a_new_block = async function(req, res) {
         //Save to blockchain
         let block = new SC.Block(body);
         let completeBlock = await chain.addBlock(block);
+        
         //Not saved, only returned
-        completeBlock.body.star.storyDecoded = hex2a(completeBlock.body.star.story);
+        completeBlock = decode_story(completeBlock);
+        
         res.json(completeBlock);
     } catch (error) {
         console.log(error);
@@ -229,7 +296,10 @@ app.route('/block')
     .post(post_a_new_block);
 
 app.route('/block/:blockHeight')
-    .get(get_a_block);
+    .get(get_a_block_by_height);
+
+app.route('/stars/address/:address')
+    .get(get_blocks_by_address);
 
 app.route('/message-signature/validate')
     .post(validate_identity_signature);
