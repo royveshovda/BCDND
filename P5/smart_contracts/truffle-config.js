@@ -1,7 +1,3 @@
-var HDWalletProvider = require('truffle-hdwallet-provider');
-
-var mnemonic = 'scheme target input power arrive slow sausage grace base armor corn bottom';
-
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
