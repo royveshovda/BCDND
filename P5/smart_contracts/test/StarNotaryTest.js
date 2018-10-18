@@ -6,6 +6,8 @@ contract('StarNotary', accounts => {
         this.contract = await StarNotary.new({from: accounts[0]})
     })
     
+    //createStar()
+    //tokenIdToStarInfo()
     describe('can create a star', () => { 
         it('can create a star and get its info back', async function () { 
             
@@ -59,7 +61,7 @@ contract('StarNotary', accounts => {
         })
     })
 
-
+    //checkIfStarExist()
     describe('can create a star and check if it exists', () => { 
         it('star does not exists if not created', async function () {            
             var starExists = await this.contract.checkIfStarExist('123', '456', '789')
@@ -83,6 +85,9 @@ contract('StarNotary', accounts => {
         })
     })
 
+    //putStarUpForSale()
+    //buyStar()    
+    //starsForSale()
     describe('buying and selling stars', () => { 
         let user1 = accounts[1]
         let user2 = accounts[2]
