@@ -62,6 +62,7 @@ contract('ERC721 Interface', accounts => {
         })
     })
 
+
     //approve()
     //getApproved()
     describe('can grant approval to transfer', () => { 

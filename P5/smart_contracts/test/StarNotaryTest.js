@@ -59,6 +59,17 @@ contract('StarNotary', accounts => {
             assert.equal(star[3], '456')
             assert.equal(star[4], '7890')
         })
+
+        it('can create two stars', async function () {
+            await this.contract.createStar('awesome star 1!', '111', '222', '333', 'Too long to tell 1', 1, {from: accounts[0]})
+            await this.contract.createStar('awesome star 2!', '444', '555', '666', 'Too long to tell 2', 2, {from: accounts[0]})
+        })
+
+        it('cannot create a star with existing ID', async function () {
+            await this.contract.createStar('awesome star 1!', '111', '222', '333', 'Too long to tell 1', 1, {from: accounts[0]})
+
+            await expectThrow(this.contract.createStar('awesome star 2!', '444', '555', '666', 'Too long to tell 2', 1, {from: accounts[0]}))
+        })
     })
 
     //checkIfStarExist()
@@ -75,8 +86,9 @@ contract('StarNotary', accounts => {
             assert.equal(starExists, true)
         })
     })
+    
 
-    describe('cannot create a star', () => { 
+    describe('cannot create a star with same coordinates', () => { 
         it('cannot create a star with same coordinates as an existing one', async function () { 
             
             await this.contract.createStar('awesome star!', '123', '456', '789', 'Too long to tell', 1, {from: accounts[0]})
@@ -84,6 +96,19 @@ contract('StarNotary', accounts => {
             await expectThrow(this.contract.createStar('awesome star 2!', '123', '456', '789', 'Too long to tell 2', 2, {from: accounts[0]}))
         })
     })
+
+    describe('Get info for non existing token', () => { 
+        it('Nothing returned when searching for non existing token', async function () { 
+            var tokenId = 1
+            var star = await this.contract.tokenIdToStarInfo(tokenId)            
+            assert.equal(star[0], '')
+            assert.equal(star[1], '')
+            assert.equal(star[2], '')
+            assert.equal(star[3], '')
+            assert.equal(star[4], '')
+        })
+    })
+
 
     //putStarUpForSale()
     //buyStar()    

@@ -15,5 +15,8 @@
   "dependencies": {
     "openzeppelin-solidity": "2.0.0-rc.3",
     "truffle-hdwallet-provider": "0.0.6"
+  },
+  "devDependencies": {
+    "truffle-flattener": "^1.2.9"
   }
 }

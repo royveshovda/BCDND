@@ -17,6 +17,7 @@ contract StarNotary is ERC721 {
 
     function createStar(string _name, string _dec, string _mag, string _cent, string _story, uint256 _tokenId) public { 
         require(checkIfStarExist(_dec, _mag, _cent) == false, "This start does already exists.");
+        require(_exists(_tokenId) == false, "This token has already been used.");
 
         Star memory newStar = Star(_name, _dec, _mag, _cent, _story);
         bytes32 starCoordinates = starCoordinatesToSingleString(_dec, _mag, _cent);
