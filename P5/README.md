@@ -1,21 +1,43 @@
 # Identities
 ## Contract ID:
-0x71c29310ddbdba9cb34a2b75128b0040268ab2ed
-https://rinkeby.etherscan.io/address/0x71c29310ddbdba9cb34a2b75128b0040268ab2ed
+0xfd85c62ff0decc4cc64aa78a3213327ed5db3547
+https://rinkeby.etherscan.io/address/0xfd85c62ff0decc4cc64aa78a3213327ed5db3547
 
 ## Contract Tx:
-https://rinkeby.etherscan.io/tx/0x3e2f51fae5b732be1975730d0a321ac4a49a82873a0f8b1606563d4af1d00c49
+https://rinkeby.etherscan.io/tx/0xf68ef957320d1cff2174fa229f9fb817ee63dc4d25903b086fe3942fc4a12e81
+
 
 ## createStar Tx:
-https://rinkeby.etherscan.io/tx/0x4b8bece26afc8cad4487831d6b9590313b8c51dcbed34cf418408a5fbbb8cb81
+https://rinkeby.etherscan.io/tx/0x1909fd90d6116cdd47fe17062bf2d89d6150db884bc5f53980d897eccbf1e742
+(starID: 1)
 
 ## putStarForSale Tx:
-https://rinkeby.etherscan.io/tx/0xabcbfa8d84f0b2eb3b8734d96f03248afb4cbbc1e61777fada54178a8c60162d
-
+https://rinkeby.etherscan.io/tx/0x2d0b2b50f3c1bfe80c600d4bcc331fa0e2c5fec117d72c15bde64a1bbf318169
+(starID: 1)
 
 # To run
 Start local dev network:
 ganache-cli --mnemonic 'scheme target input power arrive slow sausage grace base armor corn bottom'
+
+
+## Useful commands
+truffle deploy --network rinkeby
+
+truffle console --network rinkeby
+
+// createStar
+truffle(rinkeby)> StarNotary.at("0xfd85c62ff0decc4cc64aa78a3213327ed5db3547").createStar("Beta Librae", "Also named ubeneschamali", "ra_15h_17m_00.41382s", "dec_-09deg_22min_58.4919sec", "mag_2.61", 1, {from: "0x9b4788e051438f3d11102e3ac839094526ae8d0b"});
+
+// putStarForSale
+truffle(rinkeby)> StarNotary.at("0xfd85c62ff0decc4cc64aa78a3213327ed5db3547").putStarUpForSale(1, web3.toWei(.01, "ether"), {from: "0x9b4788e051438f3d11102e3ac839094526ae8d0b"});
+
+// list stars for sale
+truffle(rinkeby)> StarNotary.at("0xfd85c62ff0decc4cc64aa78a3213327ed5db3547").starsForSale({from: "0x9b4788e051438f3d11102e3ac839094526ae8d0b"});
+
+
+// get star info
+truffle(rinkeby)> StarNotary.at("0xfd85c62ff0decc4cc64aa78a3213327ed5db3547").tokenIdToStarInfo(1, {from: "0x9b4788e051438f3d11102e3ac839094526ae8d0b"});
+
 
 
 ## Available Accounts

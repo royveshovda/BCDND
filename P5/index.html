@@ -111,25 +111,6 @@
                     "constant": true,
                     "inputs": [
                         {
-                        "name": "",
-                        "type": "uint256"
-                        }
-                    ],
-                    "name": "starsForSale",
-                    "outputs": [
-                        {
-                        "name": "",
-                        "type": "uint256"
-                        }
-                    ],
-                    "payable": false,
-                    "stateMutability": "view",
-                    "type": "function"
-                    },
-                    {
-                    "constant": true,
-                    "inputs": [
-                        {
                         "name": "tokenId",
                         "type": "uint256"
                         }
@@ -300,6 +281,25 @@
                     "type": "function"
                     },
                     {
+                    "constant": true,
+                    "inputs": [
+                        {
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                    "name": "_starsForSale",
+                    "outputs": [
+                        {
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                    "payable": false,
+                    "stateMutability": "view",
+                    "type": "function"
+                    },
+                    {
                     "constant": false,
                     "inputs": [
                         {
@@ -341,6 +341,25 @@
                     "outputs": [],
                     "payable": false,
                     "stateMutability": "nonpayable",
+                    "type": "function"
+                    },
+                    {
+                    "constant": true,
+                    "inputs": [
+                        {
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                    "name": "_starsForSalePrices",
+                    "outputs": [
+                        {
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                    "payable": false,
+                    "stateMutability": "view",
                     "type": "function"
                     },
                     {
@@ -547,6 +566,20 @@
                     "type": "function"
                     },
                     {
+                    "constant": true,
+                    "inputs": [],
+                    "name": "starsForSale",
+                    "outputs": [
+                        {
+                        "name": "",
+                        "type": "uint256[]"
+                        }
+                    ],
+                    "payable": false,
+                    "stateMutability": "view",
+                    "type": "function"
+                    },
+                    {
                     "constant": false,
                     "inputs": [
                         {
@@ -559,10 +592,33 @@
                     "payable": true,
                     "stateMutability": "payable",
                     "type": "function"
+                    },
+                    {
+                    "constant": true,
+                    "inputs": [
+                        {
+                        "name": "value",
+                        "type": "uint256"
+                        }
+                    ],
+                    "name": "findStarForSaleIndex",
+                    "outputs": [
+                        {
+                        "name": "",
+                        "type": "bool"
+                        },
+                        {
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                    "payable": false,
+                    "stateMutability": "view",
+                    "type": "function"
                     }
                 ]
             );
-            var starNotary = StarNotary.at('0x71c29310ddbdba9cb34a2b75128b0040268ab2ed');
+            var starNotary = StarNotary.at('0xfd85c62ff0decc4cc64aa78a3213327ed5db3547');
 
             function checkSearchInput(value){
                 if(value === ''){
