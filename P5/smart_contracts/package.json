@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "openzeppelin-solidity": "2.0.0-rc.3",
-    "truffle-hdwallet-provider": "0.0.6"
+    "truffle-hdwallet-provider": "1.0.17"
   },
   "devDependencies": {
     "truffle-flattener": "^1.6.0"
